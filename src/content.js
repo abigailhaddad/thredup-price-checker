@@ -273,12 +273,20 @@
       return;
     }
 
-    // If on a featured page, check for discount and show badge
+    // If on a featured page, wait for page to load then check for discount
     if (isOnFeaturedPage()) {
-      console.log('[ThredUp Checker] On featured page, checking for discount...');
+      console.log('[ThredUp Checker] On featured page, waiting for page to load...');
 
-      // Wait a moment for the page to fully render
-      setTimeout(() => {
+      const checkWhenReady = () => {
+        // Wait for price element to appear (indicates page is loaded)
+        const priceElement = document.querySelector('.heading-sm-sans-bold');
+        if (!priceElement) {
+          // Page not ready yet, keep waiting
+          setTimeout(checkWhenReady, 300);
+          return;
+        }
+
+        // Page is loaded - now check for promo badge
         const promoDiscount = getPromoCodeDiscount();
         const discountPercent = promoDiscount !== null ? promoDiscount : 0;
         const has50PercentOff = promoDiscount !== null && promoDiscount >= 50;
@@ -294,7 +302,9 @@
 
         console.log(`[ThredUp Checker] Promo badge: ${promoDiscount}%, Original sale: ${originalSaleDiscount}%`);
         createDiscountBadge(has50PercentOff, discountPercent, originalSaleDiscount);
-      }, 1000);
+      };
+
+      checkWhenReady();
     }
   }
 
