@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "ThredUp Price Checker",
+  "version": "1.0.0",
+  "description": "Automatically detect and unlock 50% discounts on ThredUp products via featured URLs",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://www.thredup.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.thredup.com/product/*",
+        "https://www.thredup.com/featured/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+node_modules/
+logs/
+test-results/
+*.log
+
+# Debug/state files
+.last_reset
+.circuit_breaker_*
+.call_count
+.response_analysis
+.claude_session_id
+progress.json
+.exit_signals
+status.json

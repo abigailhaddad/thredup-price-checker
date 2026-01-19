@@ -1,0 +1,158 @@
+/**
+ * ThredUp Price Checker - Discount Badge Styles
+ */
+
+#thredup-discount-badge {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: all 0.3s ease;
+  animation: slideInFromRight 0.5s ease-out;
+}
+
+#thredup-discount-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+#thredup-discount-badge:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.discount-badge-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.discount-badge-text {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.discount-badge-subtext {
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.9;
+  text-align: center;
+}
+
+/* Loading state */
+#thredup-discount-badge.discount-badge-loading {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  cursor: wait;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+#thredup-discount-badge.discount-badge-loading:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+/* Unavailable/No discount state */
+#thredup-discount-badge.discount-badge-unavailable {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  cursor: default;
+}
+
+#thredup-discount-badge.discount-badge-unavailable:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+#thredup-discount-badge.discount-badge-unavailable:active {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+/* Applied/Informational state (when already on featured page) */
+#thredup-discount-badge.discount-badge-applied {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  cursor: default;
+}
+
+#thredup-discount-badge.discount-badge-applied:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+#thredup-discount-badge.discount-badge-applied:active {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Animations */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #thredup-discount-badge {
+    top: 10px;
+    right: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .discount-badge-text {
+    font-size: 14px;
+  }
+
+  .discount-badge-subtext {
+    font-size: 11px;
+  }
+}
+
+/* Ensure badge is always on top */
+#thredup-discount-badge::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: inherit;
+  border-radius: 10px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#thredup-discount-badge:hover::before {
+  opacity: 0.3;
+}

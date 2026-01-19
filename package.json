@@ -1,0 +1,17 @@
+{
+  "name": "thredup-price-checker",
+  "version": "1.0.0",
+  "description": "Browser extension to detect and unlock 50% discounts on ThredUp products",
+  "main": "src/content.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
+  },
+  "keywords": ["thredup", "extension", "discount", "price-checker"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}
