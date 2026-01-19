@@ -45,7 +45,7 @@ If the item is part of the campaign, you'll see ThredUp's 50% OFF badge on the p
 
 - Automatic redirect to featured URLs
 - Visual badge showing discount status (green = yes, red = no)
-- Works with women's, men's, and kids' products
+- Works with women's and kids' products
 - No tracking or data collection
 - Lightweight - vanilla JavaScript, no dependencies
 

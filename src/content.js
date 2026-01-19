@@ -47,11 +47,11 @@
 
   /**
    * Extract category from URL
-   * @returns {string} Category (women, men, kids) or default 'women'
+   * @returns {string} Category (women, kids) or default 'women'
    */
   function extractCategory() {
     const url = window.location.href;
-    const match = url.match(/\/product\/(women|men|kids)-/);
+    const match = url.match(/\/product\/(women|kids)-/);
     return match ? match[1] : 'women';
   }
 
