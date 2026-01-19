@@ -1,6 +1,6 @@
 /**
  * ThredUp Price Checker - Content Script
- * Auto-redirects to featured URL and shows discount status
+ * Auto-redirects to featured URL and shows discount status with savings
  */
 
 (function() {
@@ -12,6 +12,7 @@
     context: 'google_pmax_pla',
     code: 'adwords_pla'
   };
+  const STORAGE_KEY = 'thredup_checker_original_discount';
 
   /**
    * Check if we're on a featured/discount page
@@ -70,32 +71,58 @@
     return `${THREDUP_BASE_URL}/featured/${productId}?${params.toString()}`;
   }
 
+
+
   /**
-   * Check if page has 50% OFF badge for THIS product
-   * @returns {boolean} True if 50% OFF found for product
+   * Get discount percentage from the .ui-promo-code badge (featured page)
+   * Format: <span class="ui-promo-code ...">50% off</span>
+   * @returns {number|null} Discount percentage or null if not found
    */
-  function pageHasDiscountBadge() {
-    // Look for the specific promo code badge element
-    // ThredUp uses: <span class="ui-promo-code ...">50% off</span>
+  function getPromoCodeDiscount() {
     const promoBadges = document.querySelectorAll('.ui-promo-code');
 
     for (const badge of promoBadges) {
       const text = badge.textContent.trim().toLowerCase();
-      if (text === '50% off') {
-        console.log('[ThredUp Checker] Found 50% OFF badge:', badge);
-        return true;
+      const match = text.match(/(\d+)%\s*off/);
+      if (match) {
+        const percent = parseInt(match[1], 10);
+        console.log('[ThredUp Checker] Found promo code badge:', text, '->', percent, '%');
+        return percent;
       }
     }
 
-    console.log('[ThredUp Checker] No 50% OFF badge found for this product');
-    return false;
+    console.log('[ThredUp Checker] No promo code badge found');
+    return null;
+  }
+
+  /**
+   * Get discount percentage from "XX% off with code" text (product page)
+   * Format: <span class="u-text-burgundy-700 u-ml-1xs">30<!-- -->% off with code</span>
+   * @returns {number|null} Discount percentage or null if not found
+   */
+  function getProductPageDiscount() {
+    // Use specific selector from the product page structure
+    const el = document.querySelector('#root > div > main section div.u-flex-grow span.u-text-burgundy-700.u-ml-1xs');
+    if (el) {
+      const text = el.textContent.replace(/<!--.*?-->/g, '').trim();
+      const match = text.match(/(\d+)\s*%\s*off\s+with\s+code/i);
+      if (match) {
+        const percent = parseInt(match[1], 10);
+        console.log('[ThredUp Checker] Found product page discount:', text, '->', percent, '%');
+        return percent;
+      }
+    }
+    console.log('[ThredUp Checker] No product page discount found');
+    return null;
   }
 
   /**
    * Create discount badge showing result
-   * @param {boolean} hasDiscount - Whether discount was found
+   * @param {boolean} has50PercentOff - Whether 50%+ discount was found
+   * @param {number} promoDiscount - Discount percentage from promo badge
+   * @param {number|null} originalSaleDiscount - Original sale discount (e.g., 40% off with code)
    */
-  function createDiscountBadge(hasDiscount) {
+  function createDiscountBadge(has50PercentOff, promoDiscount, originalSaleDiscount) {
     // Check if badge already exists
     if (document.getElementById('thredup-discount-badge')) {
       return;
@@ -103,23 +130,90 @@
 
     const badge = document.createElement('div');
     badge.id = 'thredup-discount-badge';
-    badge.className = hasDiscount
-      ? 'thredup-discount-badge discount-badge-applied'
-      : 'thredup-discount-badge discount-badge-unavailable';
 
     const content = document.createElement('div');
     content.className = 'discount-badge-content';
 
     const mainText = document.createElement('span');
     mainText.className = 'discount-badge-text';
-    mainText.textContent = hasDiscount ? '50% OFF AVAILABLE' : 'NO DISCOUNT';
 
     const subText = document.createElement('span');
     subText.className = 'discount-badge-subtext';
-    subText.textContent = hasDiscount ? 'Discount applied!' : 'Regular price only';
+
+    // Check if promo discount is greater than 50%
+    const hasLargerDiscount = promoDiscount > 50;
+
+    if (hasLargerDiscount) {
+      // Already more than 50% off!
+      badge.className = 'thredup-discount-badge discount-badge-original-better';
+      mainText.textContent = `${promoDiscount}% OFF!`;
+      subText.textContent = 'Better than 50% off!';
+    } else if (has50PercentOff) {
+      // 50% off is available
+      badge.className = 'thredup-discount-badge discount-badge-applied';
+      mainText.textContent = `${promoDiscount}% OFF AVAILABLE`;
+      if (originalSaleDiscount !== null) {
+        subText.textContent = `Original sale was ${originalSaleDiscount}% off`;
+      } else {
+        subText.textContent = 'Discount applied!';
+      }
+    } else {
+      // No discount available
+      badge.className = 'thredup-discount-badge discount-badge-unavailable';
+      mainText.textContent = 'NO 50% DISCOUNT';
+      if (originalSaleDiscount !== null) {
+        subText.textContent = `Only ${originalSaleDiscount}% off available`;
+      } else {
+        subText.textContent = 'Regular price only';
+      }
+    }
+    badge.style.cursor = 'default';
+
+    const loginHint = document.createElement('span');
+    loginHint.className = 'discount-badge-hint';
+    loginHint.textContent = '(make sure you\'re logged in)';
 
     content.appendChild(mainText);
     content.appendChild(subText);
+    content.appendChild(loginHint);
+    badge.appendChild(content);
+
+    document.body.appendChild(badge);
+  }
+
+
+  /**
+   * Create badge for product page when discount is already >50%
+   * @param {number} discountPercent - The discount percentage
+   */
+  function createProductPageBadge(discountPercent) {
+    // Check if badge already exists
+    if (document.getElementById('thredup-discount-badge')) {
+      return;
+    }
+
+    const badge = document.createElement('div');
+    badge.id = 'thredup-discount-badge';
+    badge.className = 'thredup-discount-badge discount-badge-original-better';
+
+    const content = document.createElement('div');
+    content.className = 'discount-badge-content';
+
+    const mainText = document.createElement('span');
+    mainText.className = 'discount-badge-text';
+    mainText.textContent = `${discountPercent}% OFF!`;
+
+    const subText = document.createElement('span');
+    subText.className = 'discount-badge-subtext';
+    subText.textContent = 'Better than the 50% deal!';
+
+    const loginHint = document.createElement('span');
+    loginHint.className = 'discount-badge-hint';
+    loginHint.textContent = '(make sure you\'re logged in)';
+
+    content.appendChild(mainText);
+    content.appendChild(subText);
+    content.appendChild(loginHint);
     badge.appendChild(content);
     badge.style.cursor = 'default';
 
@@ -149,12 +243,33 @@
       return;
     }
 
-    // If on a product page, redirect to featured URL
+    // If on a product page, wait for page to load then check discount
     if (isOnProductPage()) {
-      const category = extractCategory();
-      const featuredUrl = buildFeaturedUrl(productId, category);
-      console.log(`[ThredUp Checker] Redirecting to featured URL: ${featuredUrl}`);
-      window.location.href = featuredUrl;
+      setTimeout(() => {
+        const productDiscount = getProductPageDiscount();
+        console.log(`[ThredUp Checker] Product page discount: ${productDiscount}%`);
+
+        if (productDiscount !== null && productDiscount > 50) {
+          // Already has a bigger discount, don't redirect - show badge here
+          console.log(`[ThredUp Checker] Already ${productDiscount}% off on product page, not redirecting`);
+          createProductPageBadge(productDiscount);
+          return;
+        }
+
+        // Store the original discount before redirecting
+        if (productDiscount !== null) {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+            productId: productId,
+            discount: productDiscount,
+            timestamp: Date.now()
+          }));
+        }
+
+        const category = extractCategory();
+        const featuredUrl = buildFeaturedUrl(productId, category);
+        console.log(`[ThredUp Checker] Redirecting to featured URL: ${featuredUrl}`);
+        window.location.href = featuredUrl;
+      }, 1000);
       return;
     }
 
@@ -164,9 +279,21 @@
 
       // Wait a moment for the page to fully render
       setTimeout(() => {
-        const hasDiscount = pageHasDiscountBadge();
-        console.log(`[ThredUp Checker] Discount found: ${hasDiscount}`);
-        createDiscountBadge(hasDiscount);
+        const promoDiscount = getPromoCodeDiscount();
+        const discountPercent = promoDiscount !== null ? promoDiscount : 0;
+        const has50PercentOff = promoDiscount !== null && promoDiscount >= 50;
+
+        // Get stored original discount from product page
+        let originalSaleDiscount = null;
+        try {
+          const stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+          if (stored && stored.productId === productId && (Date.now() - stored.timestamp) < 60000) {
+            originalSaleDiscount = stored.discount;
+          }
+        } catch (e) {}
+
+        console.log(`[ThredUp Checker] Promo badge: ${promoDiscount}%, Original sale: ${originalSaleDiscount}%`);
+        createDiscountBadge(has50PercentOff, discountPercent, originalSaleDiscount);
       }, 1000);
     }
   }

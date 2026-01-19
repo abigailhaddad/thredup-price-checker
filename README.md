@@ -9,10 +9,11 @@ ThredUp runs Google Shopping ad campaigns where certain items are available at 5
 **The problem**: There's no way to tell from a regular product page whether that item is part of the 50% off campaign.
 
 **The solution**: This extension automatically:
-1. Takes you to the "featured" URL version of any product you view
-2. Shows you a confirmation badge in the corner (green if 50% off is available, red if not)
+1. Checks if the item already has a better discount (>50% off) - if so, stays on the page
+2. Otherwise, takes you to the "featured" URL version to check for the 50% deal
+3. Shows you a confirmation badge with the discount status
 
-If the item is part of the campaign, you'll see ThredUp's 50% OFF badge on the page itself. The extension's badge just gives you a quick visual confirmation so you don't have to hunt for it.
+If the item is part of the campaign, you'll see ThredUp's 50% OFF badge on the page itself. The extension's badge gives you a quick visual confirmation and shows the original sale percentage for comparison.
 
 ## Installation
 
@@ -36,15 +37,18 @@ If the item is part of the campaign, you'll see ThredUp's 50% OFF badge on the p
 ## Usage
 
 1. Navigate to any ThredUp product page
-2. The extension will automatically redirect you to the featured URL
+2. The extension checks for existing discounts and redirects to featured URL if needed
 3. A badge will appear in the top-right corner:
-   - **Green "50% OFF AVAILABLE"**: The product has the 50% discount
-   - **Red "NO DISCOUNT"**: No 50% discount available for this product
+   - **Purple "XX% OFF!"**: Item already has >50% discount - better than 50% off!
+   - **Green "50% OFF AVAILABLE"**: The 50% deal is available (shows original sale % for comparison)
+   - **Red "NO 50% DISCOUNT"**: No 50% discount available
 
 ## Features
 
-- Automatic redirect to featured URLs
-- Visual badge showing discount status (green = yes, red = no)
+- Smart redirect: skips redirect if item already has >50% off
+- Visual badge showing discount status
+- Shows original sale percentage when 50% deal is available (e.g., "Original sale was 40% off")
+- Detects "XX% off with code" text on product pages
 - Works with women's and kids' products
 - No tracking or data collection
 - Lightweight - vanilla JavaScript, no dependencies

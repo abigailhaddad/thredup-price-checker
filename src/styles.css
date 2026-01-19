@@ -50,6 +50,14 @@
   text-align: center;
 }
 
+.discount-badge-hint {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.7;
+  text-align: center;
+  margin-top: 2px;
+}
+
 /* Loading state */
 #thredup-discount-badge.discount-badge-loading {
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -79,6 +87,24 @@
 #thredup-discount-badge.discount-badge-unavailable:active {
   transform: none;
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+/* Original sale was better - go back state */
+#thredup-discount-badge.discount-badge-original-better {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  cursor: pointer;
+}
+
+#thredup-discount-badge.discount-badge-original-better:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+#thredup-discount-badge.discount-badge-original-better:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
 }
 
 /* Applied/Informational state (when already on featured page) */
